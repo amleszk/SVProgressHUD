@@ -109,6 +109,10 @@
     [[SVProgressHUD sharedView] dismissWithStatus:successString error:NO afterDelay:seconds];
 }
 
++ (void)dismissWithStatus:(NSString *)statusString image:(UIImage *)image afterDelay:(NSTimeInterval)seconds {
+    [[SVProgressHUD sharedView] dismissWithStatus:statusString image:image afterDelay:seconds];
+}
+
 + (void)dismissWithError:(NSString*)errorString {
 	[[SVProgressHUD sharedView] dismissWithStatus:errorString error:YES];
 }
@@ -382,22 +386,29 @@
 }
 
 
-- (void)dismissWithStatus:(NSString *)string error:(BOOL)error afterDelay:(NSTimeInterval)seconds {
+- (void)dismissWithStatus:(NSString *)string error:(BOOL)error afterDelay:(NSTimeInterval)seconds
+{
+    UIImage *image = error ?
+        [UIImage imageNamed:@"SVProgressHUD.bundle/error.png"] :
+        [UIImage imageNamed:@"SVProgressHUD.bundle/success.png"];
+    
+    [self dismissWithStatus:string image:image afterDelay:seconds];
+}
+
+- (void)dismissWithStatus:(NSString *)string image:(UIImage *)image afterDelay:(NSTimeInterval)seconds
+{
     dispatch_async(dispatch_get_main_queue(), ^{
         if(self.alpha != 1)
             return;
         
-        if(error)
-            self.imageView.image = [UIImage imageNamed:@"SVProgressHUD.bundle/error.png"];
-        else
-            self.imageView.image = [UIImage imageNamed:@"SVProgressHUD.bundle/success.png"];
-        
+        self.imageView.image = image;
         self.imageView.hidden = NO;
         [self setStatus:string];
         [self.spinnerView stopAnimating];
         
         self.fadeOutTimer = [NSTimer scheduledTimerWithTimeInterval:seconds target:self selector:@selector(dismiss) userInfo:nil repeats:NO];
     });
+
 }
 
 - (void)dismiss {
